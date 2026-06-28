@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from "react";
 import {
   addPlayerAction,
+  deletePlayerAction,
   registerExistingPlayerAction,
   updatePlayerAction,
 } from "./actions";
@@ -39,11 +40,21 @@ interface EditFormProps {
 
 export function EditPlayerForm({ registration, seasonTeamId }: EditFormProps) {
   const [open, setOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [state, formAction, pending] = useActionState(updatePlayerAction, null);
+  const [deleteState, deleteFormAction, deletePending] = useActionState(deletePlayerAction, null);
 
   useEffect(() => {
     if (state?.success) setOpen(false);
   }, [state]);
+
+  useEffect(() => {
+    if (deleteState?.success) setOpen(false);
+  }, [deleteState]);
+
+  useEffect(() => {
+    if (!open) setConfirmDelete(false);
+  }, [open]);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -111,6 +122,45 @@ export function EditPlayerForm({ registration, seasonTeamId }: EditFormProps) {
             </Button>
           </div>
         </form>}
+
+        {open && (
+          <div className="px-4 pb-4">
+            <div className="pt-4 border-t border-border">
+              {!confirmDelete ? (
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(true)}
+                  className="text-xs text-destructive hover:underline"
+                >
+                  Eliminar jugador
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-xs text-[var(--color-dust)]">
+                    Esta acción no se puede deshacer.
+                  </p>
+                  <form action={deleteFormAction} className="flex gap-2">
+                    <input type="hidden" name="id" value={registration.players.id} />
+                    <Button type="submit" variant="destructive" size="sm" disabled={deletePending}>
+                      {deletePending ? "Eliminando…" : "Sí, eliminar"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setConfirmDelete(false)}
+                    >
+                      Cancelar
+                    </Button>
+                  </form>
+                  {deleteState?.error && (
+                    <p className="text-xs text-destructive">{deleteState.error}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );

@@ -130,3 +130,28 @@ export async function setPlayerActiveAction(formData: FormData) {
 
   revalidate();
 }
+
+export async function deletePlayerAction(
+  _prev: State,
+  formData: FormData
+): Promise<State> {
+  const id = formData.get("id") as string;
+  if (!id) return { error: "ID no válido." };
+
+  const supabase = await createClient();
+
+  const { count } = await supabase
+    .from("player_registrations")
+    .select("id", { count: "exact", head: true })
+    .eq("player_id", id);
+
+  if (count && count > 0) {
+    return { error: "No se puede eliminar un jugador inscrito en algún equipo." };
+  }
+
+  const { error } = await supabase.from("players").delete().eq("id", id);
+  if (error) return { error: "Error al eliminar el jugador." };
+
+  revalidate();
+  return { success: true };
+}

@@ -149,3 +149,28 @@ export async function unenrollTeamAction(formData: FormData) {
 
   revalidate();
 }
+
+export async function deleteTeamAction(
+  _prev: State,
+  formData: FormData
+): Promise<State> {
+  const id = formData.get("id") as string;
+  if (!id) return { error: "ID no válido." };
+
+  const supabase = await createClient();
+
+  const { count } = await supabase
+    .from("season_teams")
+    .select("id", { count: "exact", head: true })
+    .eq("team_id", id);
+
+  if (count && count > 0) {
+    return { error: "No se puede eliminar un equipo inscrito en alguna temporada." };
+  }
+
+  const { error } = await supabase.from("teams").delete().eq("id", id);
+  if (error) return { error: "Error al eliminar el equipo." };
+
+  revalidate();
+  return { success: true };
+}

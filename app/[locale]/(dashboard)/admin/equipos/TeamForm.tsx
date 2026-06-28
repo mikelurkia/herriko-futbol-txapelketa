@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import { createTeamAction, updateTeamAction } from "./actions";
+import { createTeamAction, deleteTeamAction, updateTeamAction } from "./actions";
 import {
   Sheet,
   SheetContent,
@@ -30,8 +30,10 @@ interface TeamFormProps {
 
 export function TeamForm({ team }: TeamFormProps) {
   const [open, setOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const action = team ? updateTeamAction : createTeamAction;
   const [state, formAction, pending] = useActionState(action, null);
+  const [deleteState, deleteFormAction, deletePending] = useActionState(deleteTeamAction, null);
   const [preview, setPreview] = useState<string | null>(team?.shield_url ?? null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -40,8 +42,13 @@ export function TeamForm({ team }: TeamFormProps) {
   }, [state]);
 
   useEffect(() => {
+    if (deleteState?.success) setOpen(false);
+  }, [deleteState]);
+
+  useEffect(() => {
     if (!open) {
       setPreview(team?.shield_url ?? null);
+      setConfirmDelete(false);
     }
   }, [open, team?.shield_url]);
 
@@ -186,6 +193,45 @@ export function TeamForm({ team }: TeamFormProps) {
             </Button>
           </div>
         </form>}
+
+        {open && isEdit && (
+          <div className="px-4 pb-4">
+            <div className="pt-4 border-t border-border">
+              {!confirmDelete ? (
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(true)}
+                  className="text-xs text-destructive hover:underline"
+                >
+                  Eliminar equipo
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-xs text-[var(--color-dust)]">
+                    Esta acción no se puede deshacer.
+                  </p>
+                  <form action={deleteFormAction} className="flex gap-2">
+                    <input type="hidden" name="id" value={team!.id} />
+                    <Button type="submit" variant="destructive" size="sm" disabled={deletePending}>
+                      {deletePending ? "Eliminando…" : "Sí, eliminar"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setConfirmDelete(false)}
+                    >
+                      Cancelar
+                    </Button>
+                  </form>
+                  {deleteState?.error && (
+                    <p className="text-xs text-destructive">{deleteState.error}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );
