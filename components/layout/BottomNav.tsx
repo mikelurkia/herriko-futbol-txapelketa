@@ -25,6 +25,15 @@ const navItems = [
     ),
   },
   {
+    key: "eliminatorias",
+    href: "/eliminatorias",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
+        <path d="M3 7h5M3 17h5M8 7v10M8 12h5M13 9v6M13 12h6" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
     key: "equipos",
     href: "/equipos",
     icon: (
@@ -56,7 +65,7 @@ export function BottomNav() {
       className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-[var(--color-pitch)]"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="grid grid-cols-4 h-16">
+      <div className="grid grid-cols-5 h-16">
         {navItems.map(({ key, href, icon }) => {
           const isActive = pathname.startsWith(href);
           return (

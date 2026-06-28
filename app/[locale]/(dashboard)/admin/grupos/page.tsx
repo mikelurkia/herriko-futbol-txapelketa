@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { GroupForm } from "./GroupForm";
+import { GenerateCalendarButton } from "./GenerateCalendarButton";
 import {
   addTeamToGroupAction,
   removeTeamFromGroupAction,
@@ -193,6 +194,11 @@ export default async function GruposPage() {
                     ))
                   )}
                 </div>
+
+                {/* Generate calendar */}
+                {group.group_teams.length >= 2 && (
+                  <GenerateCalendarButton groupId={group.id} />
+                )}
 
                 {/* Add team to group */}
                 {unassigned.length > 0 && (

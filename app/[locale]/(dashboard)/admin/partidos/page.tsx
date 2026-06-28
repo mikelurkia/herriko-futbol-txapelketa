@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { Link } from "@/i18n/navigation";
+import { ExternalLinkIcon } from "lucide-react";
 import { CreateMatchForm, type GroupOption, type SeasonTeamOption } from "./MatchForm";
 import { ResultForm, EditDateForm, DeleteMatchButton } from "./ResultForm";
 
@@ -26,6 +28,13 @@ type GroupInfo = {
   id: string;
   name: string;
   group_teams: { season_team_id: string }[];
+};
+
+type RoundMeta = {
+  group_id: string;
+  round: number;
+  bye_team_id: string | null;
+  referee_team_id: string | null;
 };
 
 const PHASE_LABELS: Record<string, string> = {
@@ -144,6 +153,13 @@ function MatchTable({
                   <ResultForm match={matchForForms} />
                   <EditDateForm match={matchForForms} />
                   <DeleteMatchButton matchId={m.id} />
+                  <Link
+                    href={`/admin/partidos/${m.id}`}
+                    className="inline-flex items-center justify-center w-7 h-7 text-[var(--color-dust)] hover:text-[var(--color-pitch)] transition-colors"
+                    title="Ver eventos"
+                  >
+                    <ExternalLinkIcon className="w-3.5 h-3.5" />
+                  </Link>
                 </div>
               </td>
             </tr>
@@ -200,11 +216,23 @@ export default async function PartidosPage() {
         .order("name"),
     ]);
 
+  const groupIds = ((rawGroups ?? []) as unknown as GroupInfo[]).map((g) => g.id);
+  const { data: rawRoundMeta } = groupIds.length > 0
+    ? await supabase
+        .from("group_round_meta")
+        .select("group_id, round, bye_team_id, referee_team_id")
+        .in("group_id", groupIds)
+    : { data: [] };
+
   const matches = (rawMatches ?? []) as MatchRow[];
   const seasonTeams = (rawSeasonTeams ?? []) as unknown as SeasonTeamInfo[];
   const groups = (rawGroups ?? []) as unknown as GroupInfo[];
 
   const stMap = new Map(seasonTeams.map((st) => [st.id, st]));
+
+  const roundMeta = (rawRoundMeta ?? []) as RoundMeta[];
+  // metaKey: `${group_id}:${round}` → RoundMeta
+  const metaMap = new Map(roundMeta.map((m) => [`${m.group_id}:${m.round}`, m]));
 
   // Build group options for CreateMatchForm
   const groupOptions: GroupOption[] = groups.map((g) => ({
@@ -285,6 +313,14 @@ export default async function PartidosPage() {
               {groups.map((g) => {
                 const gm = byGroup.get(g.id) ?? [];
                 if (gm.length === 0) return null;
+
+                const byRound = new Map<number, MatchRow[]>();
+                for (const m of gm) {
+                  if (!byRound.has(m.round)) byRound.set(m.round, []);
+                  byRound.get(m.round)!.push(m);
+                }
+                const sortedRounds = [...byRound.keys()].sort((a, b) => a - b);
+
                 return (
                   <div key={g.id} className="bg-white border border-border overflow-hidden">
                     <div className="px-4 py-2 border-b border-border bg-[var(--color-stone)]">
@@ -295,7 +331,41 @@ export default async function PartidosPage() {
                         {g.name}
                       </span>
                     </div>
-                    <MatchTable matches={gm} stMap={stMap} />
+                    {sortedRounds.map((round) => {
+                      const roundMatches = byRound.get(round)!;
+                      const playing = new Set(
+                        roundMatches.flatMap((m) => [m.home_team_id, m.away_team_id].filter(Boolean) as string[])
+                      );
+                      const groupTeamIds = g.group_teams.map((gt) => gt.season_team_id);
+                      const freeNames = groupTeamIds
+                        .filter((id) => !playing.has(id))
+                        .map((id) => stMap.get(id)?.teams.name)
+                        .filter(Boolean) as string[];
+
+                      const rm = metaMap.get(`${g.id}:${round}`);
+                      const refTeamName = rm?.referee_team_id ? stMap.get(rm.referee_team_id)?.teams.name : null;
+
+                      return (
+                        <div key={round}>
+                          <div className="px-4 py-1.5 border-b border-border bg-[var(--color-stone)]/50 flex flex-wrap items-center gap-x-4 gap-y-0.5">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-dust)]">
+                              Jornada {round}
+                            </span>
+                            {freeNames.length > 0 && (
+                              <span className="text-[10px] text-[var(--color-dust)]">
+                                💤 Descansa: <span className="font-medium">{freeNames.join(", ")}</span>
+                              </span>
+                            )}
+                            {refTeamName && (
+                              <span className="text-[10px] text-[var(--color-dust)]">
+                                🟡 Árbitros: <span className="font-medium">{refTeamName}</span>
+                              </span>
+                            )}
+                          </div>
+                          <MatchTable matches={roundMatches} stMap={stMap} />
+                        </div>
+                      );
+                    })}
                   </div>
                 );
               })}
@@ -307,6 +377,14 @@ export default async function PartidosPage() {
         {playoffPhases.map((phase) => {
           const pm = byPhase.get(phase) ?? [];
           if (pm.length === 0) return null;
+
+          const byRound = new Map<number, MatchRow[]>();
+          for (const m of pm) {
+            if (!byRound.has(m.round)) byRound.set(m.round, []);
+            byRound.get(m.round)!.push(m);
+          }
+          const sortedRounds = [...byRound.keys()].sort((a, b) => a - b);
+
           return (
             <section key={phase}>
               <h2
@@ -316,7 +394,16 @@ export default async function PartidosPage() {
                 {PHASE_LABELS[phase]}
               </h2>
               <div className="bg-white border border-border overflow-hidden">
-                <MatchTable matches={pm} stMap={stMap} />
+                {sortedRounds.map((round) => (
+                  <div key={round}>
+                    <div className="px-4 py-1.5 border-b border-border bg-[var(--color-stone)]/50">
+                      <span className="text-[10px] font-medium uppercase tracking-widest text-[var(--color-dust)]">
+                        Ronda {round}
+                      </span>
+                    </div>
+                    <MatchTable matches={byRound.get(round)!} stMap={stMap} />
+                  </div>
+                ))}
               </div>
             </section>
           );

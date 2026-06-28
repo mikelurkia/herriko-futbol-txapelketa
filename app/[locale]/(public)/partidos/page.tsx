@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getLocale } from "next-intl/server";
 
 type MatchRow = {
   id: string;
@@ -18,18 +19,30 @@ type MatchRow = {
 type STInfo = { id: string; teams: { name: string; primary_color: string | null } };
 type GroupInfo = { id: string; name: string };
 
-const PHASE_LABELS: Record<string, string> = {
-  group: "Fase de Grupos",
-  upper_playoff: "Liguilla Superior",
-  lower_playoff: "Liguilla Inferior",
+const PHASE_LABELS: Record<string, { es: string; eu: string }> = {
+  group: { es: "Fase de Grupos", eu: "Taldeen Fasea" },
+  upper_playoff: { es: "Liguilla Superior", eu: "Liguilla Nagusia" },
+  lower_playoff: { es: "Liguilla Inferior", eu: "Liguilla Txikia" },
 };
 
-function fmt(d: string | null) {
+function fmt(d: string | null, locale: string) {
   if (!d) return null;
-  return new Intl.DateTimeFormat("es-ES", { weekday: "short", day: "numeric", month: "short" }).format(new Date(d));
+  return new Intl.DateTimeFormat(locale === "eu" ? "eu" : "es-ES", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }).format(new Date(d));
 }
 
-function MatchRow({ m, stMap }: { m: MatchRow; stMap: Map<string, STInfo> }) {
+function MatchEntry({
+  m,
+  stMap,
+  locale,
+}: {
+  m: MatchRow;
+  stMap: Map<string, STInfo>;
+  locale: string;
+}) {
   const home = m.home_team_id ? stMap.get(m.home_team_id) : null;
   const away = m.away_team_id ? stMap.get(m.away_team_id) : null;
   const played = m.status === "played";
@@ -37,7 +50,7 @@ function MatchRow({ m, stMap }: { m: MatchRow; stMap: Map<string, STInfo> }) {
   return (
     <div className={`flex items-center gap-2 px-4 py-3 text-sm border-b border-border last:border-0 ${played ? "" : "opacity-80"}`}>
       <span className="w-20 shrink-0 text-xs text-[var(--color-dust)] capitalize">
-        {fmt(m.scheduled_date) ?? "—"}
+        {fmt(m.scheduled_date, locale) ?? "—"}
       </span>
       <div className="flex-1 flex items-center justify-end gap-1.5 min-w-0">
         {home?.teams.primary_color && (
@@ -74,6 +87,7 @@ function MatchRow({ m, stMap }: { m: MatchRow; stMap: Map<string, STInfo> }) {
 }
 
 export default async function PartidosPage() {
+  const locale = await getLocale();
   const supabase = await createClient();
 
   const { data: season } = await supabase.from("seasons").select("id, name").eq("is_active", true).maybeSingle();
@@ -81,7 +95,9 @@ export default async function PartidosPage() {
   if (!season) {
     return (
       <div className="py-12 text-center">
-        <p className="text-[var(--color-dust)]">No hay temporada activa.</p>
+        <p className="text-[var(--color-dust)]">
+          {locale === "eu" ? "Ez dago denboraldi aktiborik." : "No hay temporada activa."}
+        </p>
       </div>
     );
   }
@@ -95,7 +111,6 @@ export default async function PartidosPage() {
   const matches = (rawMatches ?? []) as MatchRow[];
   const stMap = new Map(((rawST ?? []) as unknown as STInfo[]).map((st) => [st.id, st]));
   const groups = (rawGroups ?? []) as GroupInfo[];
-  const groupMap = new Map(groups.map((g) => [g.id, g]));
 
   const groupMatches = matches.filter((m) => m.phase === "group");
   const byGroup = new Map<string, MatchRow[]>();
@@ -112,31 +127,35 @@ export default async function PartidosPage() {
     byPhase.get(m.phase)!.push(m);
   }
 
+  const jornada = locale === "eu" ? "Jardunaldia" : "Jornada";
+  const txanda = locale === "eu" ? "Txanda" : "Ronda";
+
   return (
     <div>
       <h1
         className="text-3xl font-bold uppercase tracking-tight mb-1"
         style={{ fontFamily: "var(--font-display)", color: "var(--color-pitch)" }}
       >
-        Partidos
+        {locale === "eu" ? "Partidak" : "Partidos"}
       </h1>
       <p className="text-sm text-[var(--color-dust)] mb-6">{season.name}</p>
 
       {matches.length === 0 ? (
-        <p className="text-sm text-[var(--color-dust)]">Aún no hay partidos programados.</p>
+        <p className="text-sm text-[var(--color-dust)]">
+          {locale === "eu" ? "Oraindik ez dago partidarik programatuta." : "Aún no hay partidos programados."}
+        </p>
       ) : (
         <div className="flex flex-col gap-8">
           {/* Group stage */}
           {groupMatches.length > 0 && (
             <section>
               <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-dust)] mb-3" style={{ fontFamily: "var(--font-display)" }}>
-                Fase de Grupos
+                {PHASE_LABELS.group[locale as "es" | "eu"] ?? PHASE_LABELS.group.es}
               </h2>
               <div className="flex flex-col gap-3">
                 {groups.map((g) => {
                   const gm = byGroup.get(g.id) ?? [];
                   if (gm.length === 0) return null;
-                  // Group by round
                   const byRound = new Map<number, MatchRow[]>();
                   for (const m of gm) {
                     if (!byRound.has(m.round)) byRound.set(m.round, []);
@@ -152,9 +171,11 @@ export default async function PartidosPage() {
                       {[...byRound.entries()].sort(([a], [b]) => a - b).map(([round, ms]) => (
                         <div key={round}>
                           <div className="px-4 py-1.5 bg-[var(--color-stone)]/50 border-b border-border">
-                            <span className="text-[10px] uppercase tracking-widest text-[var(--color-dust)] font-medium">Jornada {round}</span>
+                            <span className="text-[10px] uppercase tracking-widest text-[var(--color-dust)] font-medium">
+                              {jornada} {round}
+                            </span>
                           </div>
-                          {ms.map((m) => <MatchRow key={m.id} m={m} stMap={stMap} />)}
+                          {ms.map((m) => <MatchEntry key={m.id} m={m} stMap={stMap} locale={locale} />)}
                         </div>
                       ))}
                     </div>
@@ -176,15 +197,17 @@ export default async function PartidosPage() {
             return (
               <section key={phase}>
                 <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-dust)] mb-3" style={{ fontFamily: "var(--font-display)" }}>
-                  {PHASE_LABELS[phase]}
+                  {PHASE_LABELS[phase][locale as "es" | "eu"] ?? PHASE_LABELS[phase].es}
                 </h2>
                 <div className="bg-white border border-border overflow-hidden">
                   {[...byRound.entries()].sort(([a], [b]) => a - b).map(([round, ms]) => (
                     <div key={round}>
                       <div className="px-4 py-1.5 bg-[var(--color-stone)]/50 border-b border-border">
-                        <span className="text-[10px] uppercase tracking-widest text-[var(--color-dust)] font-medium">Ronda {round}</span>
+                        <span className="text-[10px] uppercase tracking-widest text-[var(--color-dust)] font-medium">
+                          {txanda} {round}
+                        </span>
                       </div>
-                      {ms.map((m) => <MatchRow key={m.id} m={m} stMap={stMap} />)}
+                      {ms.map((m) => <MatchEntry key={m.id} m={m} stMap={stMap} locale={locale} />)}
                     </div>
                   ))}
                 </div>

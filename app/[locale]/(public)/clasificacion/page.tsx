@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getLocale } from "next-intl/server";
 
 type MatchRow = {
   id: string;
@@ -57,6 +58,7 @@ function buildStandings(ids: string[], stMap: Map<string, STInfo>, matches: Matc
 }
 
 export default async function ClasificacionPage() {
+  const locale = await getLocale();
   const supabase = await createClient();
 
   const { data: season } = await supabase
@@ -68,7 +70,9 @@ export default async function ClasificacionPage() {
   if (!season) {
     return (
       <div className="py-12 text-center">
-        <p className="text-[var(--color-dust)]">No hay temporada activa.</p>
+        <p className="text-[var(--color-dust)]">
+          {locale === "eu" ? "Ez dago denboraldi aktiborik." : "No hay temporada activa."}
+        </p>
       </div>
     );
   }
@@ -90,12 +94,14 @@ export default async function ClasificacionPage() {
         className="text-3xl font-bold uppercase tracking-tight mb-1"
         style={{ fontFamily: "var(--font-display)", color: "var(--color-pitch)" }}
       >
-        Clasificación
+        {locale === "eu" ? "Sailkapena" : "Clasificación"}
       </h1>
       <p className="text-sm text-[var(--color-dust)] mb-6">{season.name}</p>
 
       {groups.length === 0 ? (
-        <p className="text-sm text-[var(--color-dust)]">Aún no hay grupos definidos.</p>
+        <p className="text-sm text-[var(--color-dust)]">
+          {locale === "eu" ? "Oraindik ez dago talderik." : "Aún no hay grupos definidos."}
+        </p>
       ) : (
         <div className="flex flex-col gap-8">
           {groups.map((g) => {
@@ -116,7 +122,7 @@ export default async function ClasificacionPage() {
                     <thead>
                       <tr className="border-b border-border bg-[var(--color-stone)] text-xs uppercase tracking-widest text-[var(--color-dust)]">
                         <th className="text-left px-3 py-2 w-6 font-medium">#</th>
-                        <th className="text-left px-3 py-2 font-medium">Equipo</th>
+                        <th className="text-left px-3 py-2 font-medium">{locale === "eu" ? "Taldea" : "Equipo"}</th>
                         <th className="text-center px-2 py-2 font-medium">PJ</th>
                         <th className="text-center px-2 py-2 font-medium">G</th>
                         <th className="text-center px-2 py-2 font-medium">E</th>

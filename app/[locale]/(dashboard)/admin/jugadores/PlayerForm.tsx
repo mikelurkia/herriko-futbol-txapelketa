@@ -56,7 +56,11 @@ export function EditPlayerForm({ registration, seasonTeamId }: EditFormProps) {
         <SheetHeader>
           <SheetTitle>Editar jugador</SheetTitle>
         </SheetHeader>
-        <form action={formAction} className="flex flex-col gap-5 p-4 pt-2">
+        {open && <form
+          key={`${registration.players.first_name}:${registration.players.last_name}:${registration.jersey_number ?? ""}`}
+          action={formAction}
+          className="flex flex-col gap-5 p-4 pt-2"
+        >
           <input type="hidden" name="player_id" value={registration.players.id} />
           <input type="hidden" name="registration_id" value={registration.id} />
 
@@ -106,7 +110,7 @@ export function EditPlayerForm({ registration, seasonTeamId }: EditFormProps) {
               Cancelar
             </Button>
           </div>
-        </form>
+        </form>}
       </SheetContent>
     </Sheet>
   );

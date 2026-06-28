@@ -56,7 +56,11 @@ export function PublicationForm({ publication }: PublicationFormProps) {
             {isEdit ? "Editar publicación" : "Nueva publicación"}
           </SheetTitle>
         </SheetHeader>
-        <form action={formAction} className="flex flex-col gap-5 p-4 pt-2">
+        {open && <form
+          key={`${publication?.title_es ?? ""}:${publication?.title_eu ?? ""}`}
+          action={formAction}
+          className="flex flex-col gap-5 p-4 pt-2"
+        >
           {isEdit && <input type="hidden" name="id" value={publication.id} />}
 
           <fieldset className="space-y-3 border border-border rounded-sm p-3">
@@ -123,7 +127,7 @@ export function PublicationForm({ publication }: PublicationFormProps) {
               Cancelar
             </Button>
           </div>
-        </form>
+        </form>}
       </SheetContent>
     </Sheet>
   );

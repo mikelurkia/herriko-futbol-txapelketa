@@ -32,7 +32,7 @@ export function SeasonForm() {
         <SheetHeader>
           <SheetTitle>Nueva temporada</SheetTitle>
         </SheetHeader>
-        <form action={action} className="flex flex-col gap-5 p-4 pt-2">
+        <form key={String(open)} action={action} className="flex flex-col gap-5 p-4 pt-2">
           <div className="space-y-1.5">
             <Label htmlFor="name">Nombre</Label>
             <Input

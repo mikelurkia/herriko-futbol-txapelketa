@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { createTeamAction, updateTeamAction } from "./actions";
 import {
   Sheet,
@@ -12,13 +12,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PlusIcon, PencilIcon } from "lucide-react";
+import { PlusIcon, PencilIcon, UploadIcon } from "lucide-react";
+import Image from "next/image";
 
 interface Team {
   id: string;
   name: string;
   primary_color: string | null;
   secondary_color: string | null;
+  founded_year: number | null;
+  shield_url: string | null;
 }
 
 interface TeamFormProps {
@@ -29,12 +32,27 @@ export function TeamForm({ team }: TeamFormProps) {
   const [open, setOpen] = useState(false);
   const action = team ? updateTeamAction : createTeamAction;
   const [state, formAction, pending] = useActionState(action, null);
+  const [preview, setPreview] = useState<string | null>(team?.shield_url ?? null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (state?.success) setOpen(false);
   }, [state]);
 
+  useEffect(() => {
+    if (!open) {
+      setPreview(team?.shield_url ?? null);
+    }
+  }, [open, team?.shield_url]);
+
   const isEdit = !!team;
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setPreview(url);
+  }
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -54,9 +72,48 @@ export function TeamForm({ team }: TeamFormProps) {
         <SheetHeader>
           <SheetTitle>{isEdit ? "Editar equipo" : "Nuevo equipo"}</SheetTitle>
         </SheetHeader>
-        <form action={formAction} className="flex flex-col gap-5 p-4 pt-2">
+        {open && <form
+          key={`${team?.name ?? ""}:${team?.founded_year ?? ""}`}
+          action={formAction}
+          className="flex flex-col gap-5 p-4 pt-2 overflow-y-auto"
+        >
           {isEdit && <input type="hidden" name="id" value={team.id} />}
 
+          {/* Escudo / Logo */}
+          <div className="space-y-2">
+            <Label>Escudo / Logo</Label>
+            <div
+              className="relative flex items-center justify-center w-24 h-24 border-2 border-dashed border-border rounded-sm bg-[var(--color-stone)] cursor-pointer hover:border-[var(--color-pitch)] transition-colors overflow-hidden"
+              onClick={() => fileRef.current?.click()}
+            >
+              {preview ? (
+                <Image
+                  src={preview}
+                  alt="Escudo"
+                  fill
+                  className="object-contain p-1"
+                  unoptimized
+                />
+              ) : (
+                <div className="flex flex-col items-center gap-1 text-[var(--color-dust)]">
+                  <UploadIcon className="w-6 h-6" />
+                  <span className="text-[10px] uppercase tracking-wide">Subir</span>
+                </div>
+              )}
+            </div>
+            <input
+              ref={fileRef}
+              id="shield"
+              name="shield"
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={handleFileChange}
+            />
+            <p className="text-xs text-[var(--color-dust)]">PNG, SVG o JPG · máx. 2 MB</p>
+          </div>
+
+          {/* Nombre */}
           <div className="space-y-1.5">
             <Label htmlFor="name">Nombre</Label>
             <Input
@@ -68,35 +125,47 @@ export function TeamForm({ team }: TeamFormProps) {
             />
           </div>
 
+          {/* Año de fundación */}
           <div className="space-y-1.5">
-            <Label htmlFor="primary_color">Color principal</Label>
-            <div className="flex items-center gap-3">
-              <input
-                id="primary_color"
-                name="primary_color"
-                type="color"
-                defaultValue={team?.primary_color ?? "#1a1a1a"}
-                className="w-10 h-10 rounded border border-border cursor-pointer p-0.5 bg-white"
-              />
-              <span className="text-xs text-[var(--color-dust)]">
-                Color de camiseta principal
-              </span>
-            </div>
+            <Label htmlFor="founded_year">
+              Año de fundación{" "}
+              <span className="text-[var(--color-dust)] font-normal">(opcional)</span>
+            </Label>
+            <Input
+              id="founded_year"
+              name="founded_year"
+              type="number"
+              min={1800}
+              max={2100}
+              placeholder="1987"
+              defaultValue={team?.founded_year ?? ""}
+            />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="secondary_color">Color secundario</Label>
-            <div className="flex items-center gap-3">
-              <input
-                id="secondary_color"
-                name="secondary_color"
-                type="color"
-                defaultValue={team?.secondary_color ?? "#ffffff"}
-                className="w-10 h-10 rounded border border-border cursor-pointer p-0.5 bg-white"
-              />
-              <span className="text-xs text-[var(--color-dust)]">
-                Color de camiseta secundario
-              </span>
+          {/* Colores */}
+          <div className="space-y-3">
+            <Label>Colores de camiseta</Label>
+            <div className="flex gap-4">
+              <div className="flex items-center gap-2">
+                <input
+                  id="primary_color"
+                  name="primary_color"
+                  type="color"
+                  defaultValue={team?.primary_color ?? "#1a1a1a"}
+                  className="w-9 h-9 rounded border border-border cursor-pointer p-0.5 bg-white"
+                />
+                <span className="text-xs text-[var(--color-dust)]">Principal</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  id="secondary_color"
+                  name="secondary_color"
+                  type="color"
+                  defaultValue={team?.secondary_color ?? "#ffffff"}
+                  className="w-9 h-9 rounded border border-border cursor-pointer p-0.5 bg-white"
+                />
+                <span className="text-xs text-[var(--color-dust)]">Secundario</span>
+              </div>
             </div>
           </div>
 
@@ -116,7 +185,7 @@ export function TeamForm({ team }: TeamFormProps) {
               Cancelar
             </Button>
           </div>
-        </form>
+        </form>}
       </SheetContent>
     </Sheet>
   );

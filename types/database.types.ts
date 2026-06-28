@@ -68,6 +68,7 @@ export type Database = {
           shield_url: string | null;
           primary_color: string | null;
           secondary_color: string | null;
+          founded_year: number | null;
           created_at: string;
         };
         Insert: {
@@ -76,6 +77,7 @@ export type Database = {
           shield_url?: string | null;
           primary_color?: string | null;
           secondary_color?: string | null;
+          founded_year?: number | null;
           created_at?: string;
         };
         Update: {
@@ -84,6 +86,7 @@ export type Database = {
           shield_url?: string | null;
           primary_color?: string | null;
           secondary_color?: string | null;
+          founded_year?: number | null;
           created_at?: string;
         };
       };
@@ -145,6 +148,32 @@ export type Database = {
           id?: string;
           group_id?: string;
           season_team_id?: string;
+        };
+      };
+      group_round_meta: {
+        Row: {
+          id: string;
+          group_id: string;
+          round: number;
+          bye_team_id: string | null;
+          referee_team_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          group_id: string;
+          round: number;
+          bye_team_id?: string | null;
+          referee_team_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          group_id?: string;
+          round?: number;
+          bye_team_id?: string | null;
+          referee_team_id?: string | null;
+          created_at?: string;
         };
       };
       players: {

@@ -54,7 +54,7 @@ export function SanctionForm({ players, matches }: SanctionFormProps) {
         <SheetHeader>
           <SheetTitle>Nueva sanción</SheetTitle>
         </SheetHeader>
-        <form action={formAction} className="flex flex-col gap-4 p-4 pt-2">
+        <form key={String(open)} action={formAction} className="flex flex-col gap-4 p-4 pt-2">
           <div className="space-y-1.5">
             <Label htmlFor="player_id">Jugador</Label>
             {players.length === 0 ? (

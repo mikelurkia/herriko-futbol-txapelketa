@@ -46,7 +46,11 @@ export function GroupForm({ group }: GroupFormProps) {
         <SheetHeader>
           <SheetTitle>{isEdit ? "Renombrar grupo" : "Nuevo grupo"}</SheetTitle>
         </SheetHeader>
-        <form action={formAction} className="flex flex-col gap-5 p-4 pt-2">
+        {open && <form
+          key={group?.name ?? ""}
+          action={formAction}
+          className="flex flex-col gap-5 p-4 pt-2"
+        >
           {isEdit && <input type="hidden" name="id" value={group.id} />}
 
           <div className="space-y-1.5">
@@ -72,7 +76,7 @@ export function GroupForm({ group }: GroupFormProps) {
               Cancelar
             </Button>
           </div>
-        </form>
+        </form>}
       </SheetContent>
     </Sheet>
   );

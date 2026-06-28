@@ -10,6 +10,7 @@ import { LayoutDashboardIcon, LogInIcon } from "lucide-react";
 const navItems = [
   { key: "clasificacion", href: "/clasificacion" },
   { key: "partidos", href: "/partidos" },
+  { key: "eliminatorias", href: "/eliminatorias" },
   { key: "equipos", href: "/equipos" },
   { key: "jugadores", href: "/jugadores" },
   { key: "noticias", href: "/noticias" },

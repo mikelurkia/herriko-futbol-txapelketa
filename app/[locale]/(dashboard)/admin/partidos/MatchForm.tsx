@@ -69,7 +69,7 @@ export function CreateMatchForm({ groups, allSeasonTeams }: MatchFormProps) {
         <SheetHeader>
           <SheetTitle>Nuevo partido</SheetTitle>
         </SheetHeader>
-        <form action={formAction} className="flex flex-col gap-4 p-4 pt-2">
+        <form key={String(open)} action={formAction} className="flex flex-col gap-4 p-4 pt-2">
           {/* Phase */}
           <div className="space-y-1.5">
             <Label htmlFor="phase">Fase</Label>

@@ -60,7 +60,11 @@ export function ResultForm({ match }: { match: Match }) {
         <SheetHeader>
           <SheetTitle>Resultado</SheetTitle>
         </SheetHeader>
-        <form action={formAction} className="flex flex-col gap-5 p-4 pt-2">
+        {open && <form
+          key={`${match.home_score ?? ""}:${match.away_score ?? ""}:${match.home_penalties ?? ""}:${match.away_penalties ?? ""}`}
+          action={formAction}
+          className="flex flex-col gap-5 p-4 pt-2"
+        >
           <input type="hidden" name="match_id" value={match.id} />
 
           <div className="text-center text-sm text-[var(--color-dust)] py-1">
@@ -132,7 +136,7 @@ export function ResultForm({ match }: { match: Match }) {
               Cancelar
             </Button>
           </div>
-        </form>
+        </form>}
       </SheetContent>
     </Sheet>
   );
@@ -159,7 +163,11 @@ export function EditDateForm({ match }: { match: Match }) {
         <SheetHeader>
           <SheetTitle>Cambiar fecha</SheetTitle>
         </SheetHeader>
-        <form action={formAction} className="flex flex-col gap-5 p-4 pt-2">
+        {open && <form
+          key={match.scheduled_date ?? ""}
+          action={formAction}
+          className="flex flex-col gap-5 p-4 pt-2"
+        >
           <input type="hidden" name="match_id" value={match.id} />
 
           <div className="space-y-1.5">
@@ -184,7 +192,7 @@ export function EditDateForm({ match }: { match: Match }) {
               Cancelar
             </Button>
           </div>
-        </form>
+        </form>}
       </SheetContent>
     </Sheet>
   );
