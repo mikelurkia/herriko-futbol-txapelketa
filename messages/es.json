@@ -1,0 +1,30 @@
+{
+  "nav": {
+    "clasificacion": "Clasificación",
+    "partidos": "Partidos",
+    "equipos": "Equipos",
+    "jugadores": "Jugadores",
+    "noticias": "Noticias"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Ha ocurrido un error",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "confirm": "Confirmar"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "logout": "Cerrar sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "recoverPassword": "Recuperar contraseña"
+  },
+  "home": {
+    "title": "Herriko Futbol Txapelketa",
+    "subtitle": "Torneo de fútbol veteranos de Oñati"
+  }
+}

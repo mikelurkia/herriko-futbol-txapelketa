@@ -1,0 +1,30 @@
+{
+  "nav": {
+    "clasificacion": "Sailkapena",
+    "partidos": "Partidak",
+    "equipos": "Taldeak",
+    "jugadores": "Jokalariak",
+    "noticias": "Berriak"
+  },
+  "common": {
+    "loading": "Kargatzen...",
+    "error": "Errore bat gertatu da",
+    "save": "Gorde",
+    "cancel": "Utzi",
+    "edit": "Editatu",
+    "delete": "Ezabatu",
+    "confirm": "Baieztatu"
+  },
+  "auth": {
+    "login": "Saioa hasi",
+    "logout": "Saioa itxi",
+    "email": "Helbide elektronikoa",
+    "password": "Pasahitza",
+    "forgotPassword": "Pasahitza ahaztu duzu?",
+    "recoverPassword": "Pasahitza berreskuratu"
+  },
+  "home": {
+    "title": "Herriko Futbol Txapelketa",
+    "subtitle": "Oñatiko futbol beteranoen txapelketa"
+  }
+}
