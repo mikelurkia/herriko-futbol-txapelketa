@@ -10,7 +10,8 @@ export async function proxy(request: NextRequest) {
 
   const pathnameWithoutLocale = pathname.replace(/^\/(es|eu)/, "") || "/";
   const isAdminRoute = pathnameWithoutLocale.startsWith("/admin");
-  const isEquipoRoute = pathnameWithoutLocale.startsWith("/equipo");
+  const isEquipoRoute =
+    pathnameWithoutLocale === "/equipo" || pathnameWithoutLocale.startsWith("/equipo/");
   const isProtectedRoute = isAdminRoute || isEquipoRoute;
 
   const intlResponse = intlMiddleware(request);
