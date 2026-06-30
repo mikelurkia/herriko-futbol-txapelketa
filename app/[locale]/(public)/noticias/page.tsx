@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
+import { PageHeading } from "@/components/layout/PageHeading";
 
 const PAGE_SIZE = 10;
 
@@ -50,12 +51,7 @@ export default async function NoticiasPage({
 
   return (
     <div>
-      <h1
-        className="text-3xl font-bold uppercase tracking-tight mb-6"
-        style={{ fontFamily: "var(--font-display)", color: "var(--color-pitch)" }}
-      >
-        {locale === "eu" ? "Berriak" : "Noticias"}
-      </h1>
+      <PageHeading title={locale === "eu" ? "Berriak" : "Noticias"} />
 
       {!publications?.length ? (
         <p className="text-sm text-[var(--color-dust)]">

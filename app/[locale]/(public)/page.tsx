@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
 import { getLocale } from "next-intl/server";
+import { PageHeading } from "@/components/layout/PageHeading";
 
 // ── Standings types & logic (mirrors clasificacion page) ─────────────────────
 
@@ -255,17 +256,11 @@ export default async function HomePage() {
   return (
     <div>
       {/* ── Hero ────────────────────────────────────────────────────────── */}
-      <div className="mb-8 pb-6 border-b border-border">
-        <h1
-          className="text-4xl font-bold uppercase tracking-tight leading-none mb-1"
-          style={{ fontFamily: "var(--font-display)", color: "var(--color-pitch)" }}
-        >
-          Herriko Futbol Txapelketa
-        </h1>
-        <p className="text-sm text-[var(--color-dust)]">
-          {locale === "eu" ? "Oñatiko futbol txapelketa" : "Torneo de fútbol de Oñati"} · {season.name}
-        </p>
-      </div>
+      <PageHeading
+        title="Herriko Futbol Txapelketa"
+        subtitle={`${locale === "eu" ? "Oñatiko futbol txapelketa" : "Torneo de fútbol de Oñati"} · ${season.name}`}
+        large
+      />
 
       {/* ── Two-column layout ────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">

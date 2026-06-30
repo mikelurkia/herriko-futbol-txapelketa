@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "next-intl/server";
+import { PageHeading } from "@/components/layout/PageHeading";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -144,13 +145,7 @@ export default async function PartidosPage() {
 
   return (
     <div>
-      <h1
-        className="text-3xl font-bold uppercase tracking-tight mb-1"
-        style={{ fontFamily: "var(--font-display)", color: "var(--color-pitch)" }}
-      >
-        {locale === "eu" ? "Partidak" : "Partidos"}
-      </h1>
-      <p className="text-sm text-[var(--color-dust)] mb-6">{season.name}</p>
+      <PageHeading title={locale === "eu" ? "Partidak" : "Partidos"} subtitle={season.name} />
 
       {matches.length === 0 ? (
         <p className="text-sm text-[var(--color-dust)]">

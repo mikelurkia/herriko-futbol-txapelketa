@@ -360,7 +360,7 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ loc
                 </span>
                 <div className="flex gap-1.5">
                   {last5.map((r, i) => (
-                    <span key={i} className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold ${r === "W" ? "bg-green-500" : r === "D" ? "bg-[var(--color-dust)]" : "bg-[var(--color-gol)]"}`}>
+                    <span key={i} className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold ${r === "W" ? "bg-[var(--color-grass)]" : r === "D" ? "bg-[var(--color-dust)]" : "bg-[var(--color-gol)]"}`}>
                       {r === "W" ? "G" : r === "D" ? "E" : "P"}
                     </span>
                   ))}
@@ -393,7 +393,7 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ loc
                   const isHome = lastMatch.home_team_id === activeStId;
                   const my = isHome ? lastMatch.home_score! : lastMatch.away_score!;
                   const their = isHome ? lastMatch.away_score! : lastMatch.home_score!;
-                  const resultClass = my > their ? "text-green-600" : my === their ? "text-[var(--color-dust)]" : "text-[var(--color-gol)]";
+                  const resultClass = my > their ? "text-[var(--color-grass)]" : my === their ? "text-[var(--color-dust)]" : "text-[var(--color-gol)]";
                   const resultLabel = my > their ? "G" : my === their ? "E" : "P";
                   return (
                     <div className="bg-white border border-border p-4">
@@ -451,13 +451,13 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ loc
                           </td>
                           <td className="px-4 py-2.5 hidden sm:table-cell">
                             {isSanctioned ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-sm bg-red-50 text-red-700">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-sm bg-[var(--color-gol)]/10 text-[var(--color-gol)]">
                                 🟥 {locale === "eu" ? "Zigortua" : "Sancionado"}{matchesLeft > 0 && ` (${matchesLeft})`}
                               </span>
                             ) : !pr.is_active ? (
                               <span className="text-xs text-[var(--color-dust)]">{locale === "eu" ? "Baja" : "Inactivo"}</span>
                             ) : (
-                              <span className="text-xs text-green-600">{locale === "eu" ? "Aktibo" : "Activo"}</span>
+                              <span className="text-xs text-[var(--color-grass)]">{locale === "eu" ? "Aktibo" : "Activo"}</span>
                             )}
                           </td>
                         </tr>
@@ -534,7 +534,7 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ loc
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2">
                         <span className={`text-[var(--color-pitch)] ${row.isActive ? "font-semibold" : ""}`}>{row.seasonName}</span>
-                        {row.isActive && <span className="text-[10px] px-1.5 py-0.5 bg-green-100 text-green-700 rounded-sm">{locale === "eu" ? "Orain" : "Actual"}</span>}
+                        {row.isActive && <span className="text-[10px] px-1.5 py-0.5 bg-[var(--color-grass)]/10 text-[var(--color-grass)] rounded-sm">{locale === "eu" ? "Orain" : "Actual"}</span>}
                       </div>
                     </td>
                     <td className="px-4 py-2.5 text-[var(--color-dust)] hidden sm:table-cell">{row.groupName ?? "—"}</td>

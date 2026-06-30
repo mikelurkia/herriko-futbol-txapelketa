@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "next-intl/server";
+import { PageHeading } from "@/components/layout/PageHeading";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -119,17 +120,14 @@ export default async function JugadoresPage() {
 
   return (
     <div>
-      <h1
-        className="text-3xl font-bold uppercase tracking-tight mb-1"
-        style={{ fontFamily: "var(--font-display)", color: "var(--color-pitch)" }}
-      >
-        {locale === "eu" ? "Jokalariak" : "Jugadores"}
-      </h1>
-      <p className="text-sm text-[var(--color-dust)] mb-8">
-        {locale === "eu"
-          ? `${total} jokalari izena emanda · ${season.name}`
-          : `${total} jugador${total !== 1 ? "es" : ""} inscritos · ${season.name}`}
-      </p>
+      <PageHeading
+        title={locale === "eu" ? "Jokalariak" : "Jugadores"}
+        subtitle={
+          locale === "eu"
+            ? `${total} jokalari izena emanda · ${season.name}`
+            : `${total} jugador${total !== 1 ? "es" : ""} inscritos · ${season.name}`
+        }
+      />
 
       {/* Top scorers */}
       {scorers.length > 0 && (

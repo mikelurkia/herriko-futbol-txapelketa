@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "next-intl/server";
+import { PageHeading } from "@/components/layout/PageHeading";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -197,12 +198,7 @@ export default async function EliminatoriasPage() {
   if (matches.length === 0) {
     return (
       <div>
-        <h1
-          className="text-3xl font-bold uppercase tracking-tight mb-6"
-          style={{ fontFamily: "var(--font-display)", color: "var(--color-pitch)" }}
-        >
-          {heading}
-        </h1>
+        <PageHeading title={heading} />
         <p className="text-sm text-[var(--color-dust)]">
           {locale === "eu" ? "Kanporaketak oraindik ez dira hasi." : "Las eliminatorias aún no han comenzado."}
         </p>
@@ -212,13 +208,7 @@ export default async function EliminatoriasPage() {
 
   return (
     <div>
-      <h1
-        className="text-3xl font-bold uppercase tracking-tight mb-1"
-        style={{ fontFamily: "var(--font-display)", color: "var(--color-pitch)" }}
-      >
-        {heading}
-      </h1>
-      <p className="text-sm text-[var(--color-dust)] mb-8">{season.name}</p>
+      <PageHeading title={heading} subtitle={season.name} />
 
       <div className="flex flex-col gap-10">
         {phases.map((phase) => {
