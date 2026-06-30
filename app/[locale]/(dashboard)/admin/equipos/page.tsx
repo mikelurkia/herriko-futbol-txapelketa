@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { TeamForm } from "./TeamForm";
 import { enrollTeamAction, unenrollTeamAction } from "./actions";
+import { Link } from "@/i18n/navigation";
 
 export default async function EquiposPage() {
   const supabase = await createClient();
@@ -127,7 +128,9 @@ export default async function EquiposPage() {
                     </td>
 
                     <td className="px-4 py-2.5 font-medium text-[var(--color-pitch)]">
-                      {team.name}
+                      <Link href={`/admin/equipos/${team.id}`} className="hover:text-[var(--color-gol)] transition-colors">
+                        {team.name}
+                      </Link>
                     </td>
 
                     <td className="px-4 py-2.5 hidden sm:table-cell">

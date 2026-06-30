@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "next-intl/server";
 import Image from "next/image";
+import { Link } from "@/i18n/navigation";
 
 type TeamInfo = {
   id: string;
@@ -134,9 +135,10 @@ export default async function EquiposPage() {
             const playerCount = st.player_registrations.length;
 
             return (
-              <div
+              <Link
                 key={st.id}
-                className="bg-white border border-border flex flex-col items-center text-center overflow-hidden"
+                href={`/equipos/${t.id}`}
+                className="bg-white border border-border flex flex-col items-center text-center overflow-hidden hover:shadow-md transition-shadow"
               >
                 {/* Top color band */}
                 <div
@@ -208,7 +210,7 @@ export default async function EquiposPage() {
                       : `${playerCount} jugador${playerCount !== 1 ? "es" : ""}`}
                   </p>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
