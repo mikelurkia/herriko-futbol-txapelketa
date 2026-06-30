@@ -1,5 +1,17 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "next-intl/server";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  return {
+    title: locale === "eu" ? "Sailkapena" : "Clasificación",
+    description:
+      locale === "eu"
+        ? "Sailkapen taula taldeka, jardunaldiz jardunaldi eguneratua."
+        : "Tabla de clasificación por grupos, actualizada jornada a jornada.",
+  };
+}
 
 type MatchRow = {
   id: string;

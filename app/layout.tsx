@@ -11,7 +11,10 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
-  title: "Herriko Futbol Txapelketa",
+  title: {
+    template: "%s · Herriko Futbol Txapelketa",
+    default: "Herriko Futbol Txapelketa",
+  },
   description: "Torneo de fútbol veteranos de Oñati · Oñatiko futbol beteranoen txapelketa",
 };
 

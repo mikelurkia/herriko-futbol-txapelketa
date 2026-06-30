@@ -14,7 +14,10 @@
     "cancel": "Cancelar",
     "edit": "Editar",
     "delete": "Eliminar",
-    "confirm": "Confirmar"
+    "confirm": "Confirmar",
+    "retry": "Reintentar",
+    "next": "Siguiente",
+    "previous": "Anterior"
   },
   "auth": {
     "login": "Iniciar sesión",

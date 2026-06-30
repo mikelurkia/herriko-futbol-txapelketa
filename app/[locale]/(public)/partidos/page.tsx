@@ -1,5 +1,17 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "next-intl/server";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  return {
+    title: locale === "eu" ? "Partidak" : "Partidos",
+    description:
+      locale === "eu"
+        ? "Egutegia, jardunaldiak eta kanporaketen emaitzak."
+        : "Calendario de partidos, jornadas y resultados de la fase eliminatoria.",
+  };
+}
 
 type MatchRow = {
   id: string;

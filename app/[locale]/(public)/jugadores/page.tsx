@@ -1,5 +1,17 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "next-intl/server";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  return {
+    title: locale === "eu" ? "Jokalariak" : "Jugadores",
+    description:
+      locale === "eu"
+        ? "Golegileen sailkapena eta taldeen plantillak."
+        : "Ranking de goleadores y plantillas de todos los equipos.",
+  };
+}
 
 type PlayerReg = {
   id: string;

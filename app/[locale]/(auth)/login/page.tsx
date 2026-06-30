@@ -1,4 +1,14 @@
+import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
 import { LoginForm } from "./LoginForm";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  return {
+    title: locale === "eu" ? "Sarrera" : "Acceso",
+    robots: { index: false, follow: false },
+  };
+}
 
 export default async function LoginPage({
   params,

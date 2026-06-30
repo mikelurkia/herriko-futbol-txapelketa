@@ -1,7 +1,34 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { ArrowLeftIcon } from "lucide-react";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; id: string }>;
+}): Promise<Metadata> {
+  const { locale, id } = await params;
+  const supabase = await createClient();
+  const { data: pub } = await supabase
+    .from("publications")
+    .select("title_es, title_eu, body_es, body_eu")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (!pub) {
+    return { title: locale === "eu" ? "Berria" : "Noticia" };
+  }
+
+  const title = locale === "eu" ? pub.title_eu : pub.title_es;
+  const body = (locale === "eu" ? pub.body_eu : pub.body_es) ?? "";
+
+  return {
+    title,
+    description: body.length > 155 ? `${body.slice(0, 155).trimEnd()}…` : body,
+  };
+}
 
 export default async function NoticiaPage({
   params,

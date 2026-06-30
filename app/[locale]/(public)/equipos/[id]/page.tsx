@@ -1,9 +1,32 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { ArrowLeftIcon } from "lucide-react";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; id: string }>;
+}): Promise<Metadata> {
+  const { locale, id } = await params;
+  const supabase = await createClient();
+  const { data: team } = await supabase.from("teams").select("name").eq("id", id).maybeSingle();
+
+  if (!team) {
+    return { title: locale === "eu" ? "Taldea" : "Equipo" };
+  }
+
+  return {
+    title: team.name,
+    description:
+      locale === "eu"
+        ? `${team.name} taldearen plantilla, estatistikak eta emaitzak.`
+        : `Plantilla, estadísticas y resultados de ${team.name}.`,
+  };
+}
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 

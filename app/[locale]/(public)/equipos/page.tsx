@@ -1,7 +1,19 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "next-intl/server";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  return {
+    title: locale === "eu" ? "Taldeak" : "Equipos",
+    description:
+      locale === "eu"
+        ? "Txapelketako talde guztien zerrenda eta fitxak."
+        : "Listado y fichas de todos los equipos del torneo.",
+  };
+}
 
 type TeamInfo = {
   id: string;

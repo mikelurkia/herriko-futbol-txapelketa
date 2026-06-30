@@ -14,7 +14,10 @@
     "cancel": "Utzi",
     "edit": "Editatu",
     "delete": "Ezabatu",
-    "confirm": "Baieztatu"
+    "confirm": "Baieztatu",
+    "retry": "Berriz saiatu",
+    "next": "Hurrengoa",
+    "previous": "Aurrekoa"
   },
   "auth": {
     "login": "Saioa hasi",
