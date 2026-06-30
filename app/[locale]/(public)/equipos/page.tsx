@@ -46,7 +46,7 @@ function JerseyIcon({
     <svg
       viewBox="0 0 80 68"
       xmlns="http://www.w3.org/2000/svg"
-      className="w-14 h-12"
+      className="w-16 h-14"
       aria-hidden
     >
       {/* Left sleeve */}
@@ -161,9 +161,9 @@ export default async function EquiposPage() {
                 />
 
                 {/* Shield or jersey */}
-                <div className="pt-5 pb-3 flex items-center justify-center h-24">
+                <div className="pt-5 pb-3 flex items-center justify-center h-28">
                   {t.shield_url ? (
-                    <div className="relative w-16 h-16">
+                    <div className="relative w-20 h-20">
                       <Image
                         src={t.shield_url}
                         alt={`Escudo ${t.name}`}

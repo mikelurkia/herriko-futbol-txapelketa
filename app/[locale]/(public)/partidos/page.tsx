@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "next-intl/server";
 import { PageHeading } from "@/components/layout/PageHeading";
+import { TeamCrest } from "@/components/teams/TeamCrest";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -29,7 +30,7 @@ type MatchRow = {
   away_team_id: string | null;
 };
 
-type STInfo = { id: string; teams: { name: string; primary_color: string | null } };
+type STInfo = { id: string; teams: { name: string; primary_color: string | null; shield_url: string | null } };
 type GroupInfo = { id: string; name: string };
 
 const PHASE_LABELS: Record<string, { es: string; eu: string }> = {
@@ -66,12 +67,10 @@ function MatchEntry({
         {fmt(m.scheduled_date, locale) ?? "—"}
       </span>
       <div className="flex-1 flex items-center justify-end gap-1.5 min-w-0">
-        {home?.teams.primary_color && (
-          <span className="w-2.5 h-2.5 rounded-full border border-black/10 shrink-0" style={{ background: home.teams.primary_color }} />
-        )}
         <span className={`truncate text-right ${played ? "font-medium text-[var(--color-pitch)]" : "text-[var(--color-dust)]"}`}>
           {home?.teams.name ?? "—"}
         </span>
+        <TeamCrest shieldUrl={home?.teams.shield_url} color={home?.teams.primary_color} />
       </div>
       <div className="w-20 shrink-0 text-center">
         {played ? (
@@ -88,9 +87,7 @@ function MatchEntry({
         )}
       </div>
       <div className="flex-1 flex items-center gap-1.5 min-w-0">
-        {away?.teams.primary_color && (
-          <span className="w-2.5 h-2.5 rounded-full border border-black/10 shrink-0" style={{ background: away.teams.primary_color }} />
-        )}
+        <TeamCrest shieldUrl={away?.teams.shield_url} color={away?.teams.primary_color} />
         <span className={`truncate ${played ? "font-medium text-[var(--color-pitch)]" : "text-[var(--color-dust)]"}`}>
           {away?.teams.name ?? "—"}
         </span>
@@ -117,7 +114,7 @@ export default async function PartidosPage() {
 
   const [{ data: rawMatches }, { data: rawST }, { data: rawGroups }] = await Promise.all([
     supabase.from("matches").select("id, phase, status, round, scheduled_date, home_score, away_score, home_penalties, away_penalties, group_id, home_team_id, away_team_id").eq("season_id", season.id).order("round").order("scheduled_date", { nullsFirst: false }),
-    supabase.from("season_teams").select("id, teams(name, primary_color)").eq("season_id", season.id),
+    supabase.from("season_teams").select("id, teams(name, primary_color, shield_url)").eq("season_id", season.id),
     supabase.from("groups").select("id, name").eq("season_id", season.id).order("name"),
   ]);
 
@@ -143,9 +140,54 @@ export default async function PartidosPage() {
   const jornada = locale === "eu" ? "Jardunaldia" : "Jornada";
   const txanda = locale === "eu" ? "Txanda" : "Ronda";
 
+  // ── Jornada actual: la del próximo partido pendiente, o la última jugada ──
+  const pendingByDate = [...groupMatches]
+    .filter((m) => m.status === "pending")
+    .sort((a, b) => (a.scheduled_date ?? "9999").localeCompare(b.scheduled_date ?? "9999"));
+  const playedRounds = groupMatches.filter((m) => m.status === "played").map((m) => m.round);
+  const currentRound =
+    pendingByDate[0]?.round ?? (playedRounds.length > 0 ? Math.max(...playedRounds) : null);
+  const currentRoundMatches =
+    currentRound !== null
+      ? groupMatches
+          .filter((m) => m.round === currentRound)
+          .sort((a, b) => (a.scheduled_date ?? "9999").localeCompare(b.scheduled_date ?? "9999"))
+      : [];
+  const groupNameById = new Map(groups.map((g) => [g.id, g.name]));
+
   return (
     <div>
       <PageHeading title={locale === "eu" ? "Partidak" : "Partidos"} subtitle={season.name} />
+
+      {currentRoundMatches.length > 0 && (
+        <section className="mb-8">
+          <div className="flex items-center gap-2 mb-3">
+            <span
+              className="px-2 py-0.5 text-[10px] uppercase tracking-widest text-white font-semibold"
+              style={{ background: "var(--color-gol)" }}
+            >
+              {locale === "eu" ? "Oraingo jardunaldia" : "Jornada actual"}
+            </span>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-dust)]" style={{ fontFamily: "var(--font-display)" }}>
+              {jornada} {currentRound}
+            </h2>
+          </div>
+          <div className="bg-white border-2 overflow-hidden" style={{ borderColor: "var(--color-gol)" }}>
+            {currentRoundMatches.map((m) => (
+              <div key={m.id} className="flex items-center gap-3 border-b border-border last:border-0 px-1">
+                {groups.length > 1 && (
+                  <span className="text-[10px] uppercase tracking-widest text-[var(--color-dust)] shrink-0 w-20 truncate pl-3">
+                    {groupNameById.get(m.group_id ?? "") ?? ""}
+                  </span>
+                )}
+                <div className="flex-1">
+                  <MatchEntry m={m} stMap={stMap} locale={locale} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {matches.length === 0 ? (
         <p className="text-sm text-[var(--color-dust)]">

@@ -136,7 +136,7 @@ function JerseyIcon({ primary, secondary }: { primary: string; secondary: string
   const p = primary, s = secondary ?? primary;
   const hasStripe = secondary && secondary.toLowerCase() !== primary.toLowerCase();
   return (
-    <svg viewBox="0 0 80 68" xmlns="http://www.w3.org/2000/svg" className="w-20 h-16" aria-hidden>
+    <svg viewBox="0 0 80 68" xmlns="http://www.w3.org/2000/svg" className="w-24 h-20" aria-hidden>
       <path d="M1 14 L18 5 L23 26 L7 30Z" fill={p} stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
       <path d="M79 14 L62 5 L57 26 L73 30Z" fill={p} stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
       <path d="M7 30 L23 26 L27 7 L40 12 L53 7 L57 26 L73 30 L69 67 L11 67Z" fill={p} stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
@@ -277,9 +277,9 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ loc
       <div className="bg-white border border-border overflow-hidden mb-8">
         <div className="h-2 w-full" style={bandStyle} />
         <div className="p-6 flex items-start gap-6">
-          <div className="shrink-0 flex items-center justify-center w-24 h-20">
+          <div className="shrink-0 flex items-center justify-center w-28 h-24">
             {team.shield_url ? (
-              <div className="relative w-20 h-20">
+              <div className="relative w-24 h-24">
                 <Image src={team.shield_url} alt={`Escudo ${team.name}`} fill className="object-contain drop-shadow-sm" unoptimized />
               </div>
             ) : (

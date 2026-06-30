@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "next-intl/server";
 import { PageHeading } from "@/components/layout/PageHeading";
+import { TeamCrest } from "@/components/teams/TeamCrest";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -27,13 +28,14 @@ type MatchRow = {
 
 type STInfo = {
   id: string;
-  teams: { name: string; primary_color: string | null };
+  teams: { name: string; primary_color: string | null; shield_url: string | null };
 };
 
 type TeamStats = {
   id: string;
   name: string;
   color: string | null;
+  shieldUrl: string | null;
   pj: number; g: number; e: number; p: number;
   gf: number; gc: number; pts: number;
 };
@@ -42,7 +44,7 @@ function buildStandings(ids: string[], stMap: Map<string, STInfo>, matches: Matc
   const stats = new Map<string, TeamStats>();
   for (const id of ids) {
     const st = stMap.get(id);
-    stats.set(id, { id, name: st?.teams.name ?? "—", color: st?.teams.primary_color ?? null, pj: 0, g: 0, e: 0, p: 0, gf: 0, gc: 0, pts: 0 });
+    stats.set(id, { id, name: st?.teams.name ?? "—", color: st?.teams.primary_color ?? null, shieldUrl: st?.teams.shield_url ?? null, pj: 0, g: 0, e: 0, p: 0, gf: 0, gc: 0, pts: 0 });
   }
   for (const m of matches) {
     if (m.status !== "played" || m.home_score === null || m.away_score === null) continue;
@@ -92,7 +94,7 @@ export default async function ClasificacionPage() {
 
   const [{ data: rawGroups }, { data: rawST }, { data: rawMatches }] = await Promise.all([
     supabase.from("groups").select("id, name, group_teams(season_team_id)").eq("season_id", season.id).order("name"),
-    supabase.from("season_teams").select("id, teams(name, primary_color)").eq("season_id", season.id),
+    supabase.from("season_teams").select("id, teams(name, primary_color, shield_url)").eq("season_id", season.id),
     supabase.from("matches").select("id, status, phase, group_id, home_team_id, away_team_id, home_score, away_score").eq("season_id", season.id).eq("phase", "group"),
   ]);
 
@@ -145,10 +147,8 @@ export default async function ClasificacionPage() {
                         <tr key={row.id} className="hover:bg-[var(--color-stone)]/50 transition-colors">
                           <td className="px-3 py-2.5 text-xs text-[var(--color-dust)]">{i + 1}</td>
                           <td className="px-3 py-2.5">
-                            <div className="flex items-center gap-2">
-                              {row.color && (
-                                <span className="w-2.5 h-2.5 rounded-full border border-black/10 shrink-0" style={{ background: row.color }} />
-                              )}
+                            <div className="flex items-center gap-2.5">
+                              <TeamCrest shieldUrl={row.shieldUrl} color={row.color} />
                               <span className="font-medium text-[var(--color-pitch)]">{row.name}</span>
                             </div>
                           </td>

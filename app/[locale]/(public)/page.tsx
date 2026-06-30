@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
 import { getLocale } from "next-intl/server";
 import { PageHeading } from "@/components/layout/PageHeading";
+import { TeamCrest } from "@/components/teams/TeamCrest";
 
 // ── Standings types & logic (mirrors clasificacion page) ─────────────────────
 
@@ -14,17 +15,19 @@ type MatchRow = {
   away_team_id: string | null;
   home_score: number | null;
   away_score: number | null;
+  scheduled_date: string | null;
 };
 
 type STInfo = {
   id: string;
-  teams: { name: string; primary_color: string | null };
+  teams: { name: string; primary_color: string | null; shield_url: string | null };
 };
 
 type TeamStats = {
   id: string;
   name: string;
   color: string | null;
+  shieldUrl: string | null;
   pj: number;
   g: number;
   e: number;
@@ -46,6 +49,7 @@ function buildStandings(
       id,
       name: st?.teams.name ?? "—",
       color: st?.teams.primary_color ?? null,
+      shieldUrl: st?.teams.shield_url ?? null,
       pj: 0, g: 0, e: 0, p: 0, gf: 0, gc: 0, pts: 0,
     });
   }
@@ -171,11 +175,11 @@ export default async function HomePage() {
       .order("name"),
     supabase
       .from("season_teams")
-      .select("id, teams(name, primary_color), player_registrations(id, is_active, season_team_id, player_id, players(first_name, last_name))")
+      .select("id, teams(name, primary_color, shield_url), player_registrations(id, is_active, season_team_id, player_id, players(first_name, last_name))")
       .eq("season_id", season.id),
     supabase
       .from("matches")
-      .select("id, status, phase, group_id, home_team_id, away_team_id, home_score, away_score")
+      .select("id, status, phase, group_id, home_team_id, away_team_id, home_score, away_score, scheduled_date")
       .eq("season_id", season.id)
       .eq("phase", "group"),
     supabase
@@ -238,6 +242,30 @@ export default async function HomePage() {
       month: "short",
     }).format(new Date(d));
 
+  // ── Standings per group (shared by the leader card and the table below) ──
+  const groupStandings = groups.map((g) => {
+    const ids = g.group_teams.map((gt) => gt.season_team_id);
+    const groupMatches = matches.filter((m) => m.group_id === g.id);
+    return { group: g, standings: buildStandings(ids, stMap, groupMatches) };
+  });
+  const leaders = groupStandings
+    .filter(({ standings }) => standings.some((s) => s.pj > 0))
+    .map(({ group, standings }) => ({ group, leader: standings[0] }));
+
+  // ── Next match (group phase) ─────────────────────────────────────────────
+  const nextMatch = matches
+    .filter((m) => m.status === "pending")
+    .sort((a, b) => (a.scheduled_date ?? "9999").localeCompare(b.scheduled_date ?? "9999"))[0] ?? null;
+  const nextMatchHome = nextMatch?.home_team_id ? stMap.get(nextMatch.home_team_id) : null;
+  const nextMatchAway = nextMatch?.away_team_id ? stMap.get(nextMatch.away_team_id) : null;
+  const nextMatchDate = nextMatch?.scheduled_date
+    ? new Intl.DateTimeFormat(locale === "eu" ? "eu" : "es-ES", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+      }).format(new Date(nextMatch.scheduled_date))
+    : null;
+
   // ── Labels ────────────────────────────────────────────────────────────────
   const t = {
     clasificacion: locale === "eu" ? "Sailkapena" : "Clasificación",
@@ -262,6 +290,76 @@ export default async function HomePage() {
         large
       />
 
+      {/* ── Stat cards ──────────────────────────────────────────────────── */}
+      {(nextMatch || top5.length > 0 || leaders.length > 0) && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+          {nextMatch && (
+            <Link
+              href="/partidos"
+              className="bg-white border border-border p-4 hover:border-[var(--color-gol)] transition-colors"
+            >
+              <p className="text-[10px] uppercase tracking-widest text-[var(--color-dust)] mb-2">
+                {locale === "eu" ? "Hurrengo partida" : "Próximo partido"}
+              </p>
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-medium text-sm text-[var(--color-pitch)] truncate">
+                  {nextMatchHome?.teams.name ?? "—"}
+                </span>
+                <span className="text-xs text-[var(--color-dust)] shrink-0">vs</span>
+                <span className="font-medium text-sm text-[var(--color-pitch)] truncate text-right">
+                  {nextMatchAway?.teams.name ?? "—"}
+                </span>
+              </div>
+              {nextMatchDate && (
+                <p className="text-xs text-[var(--color-dust)] mt-1.5 capitalize">{nextMatchDate}</p>
+              )}
+            </Link>
+          )}
+
+          {top5.length > 0 && (
+            <Link
+              href="/jugadores"
+              className="bg-white border border-border p-4 hover:border-[var(--color-gol)] transition-colors"
+            >
+              <p className="text-[10px] uppercase tracking-widest text-[var(--color-dust)] mb-2">
+                {locale === "eu" ? "Golegilea" : "Máximo goleador"}
+              </p>
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-medium text-sm text-[var(--color-pitch)] truncate">{top5[0].name}</span>
+                <span className="font-bold tabular-nums text-[var(--color-gol)] shrink-0">⚽ {top5[0].goals}</span>
+              </div>
+              <p className="text-xs text-[var(--color-dust)] mt-1.5 truncate">{top5[0].teamName}</p>
+            </Link>
+          )}
+
+          {leaders.length > 0 && (
+            <Link
+              href="/clasificacion"
+              className="bg-white border border-border p-4 hover:border-[var(--color-gol)] transition-colors"
+            >
+              <p className="text-[10px] uppercase tracking-widest text-[var(--color-dust)] mb-2">
+                {leaders.length > 1
+                  ? locale === "eu" ? "Liderrak" : "Líderes"
+                  : locale === "eu" ? "Liderra" : "Líder"}
+              </p>
+              <div className="flex flex-col gap-1.5">
+                {leaders.slice(0, 2).map(({ group, leader }) => (
+                  <div key={group.id} className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <TeamCrest shieldUrl={leader.shieldUrl} color={leader.color} />
+                      <span className="font-medium text-sm text-[var(--color-pitch)] truncate">{leader.name}</span>
+                    </div>
+                    <span className="text-xs text-[var(--color-dust)] shrink-0">
+                      {leaders.length > 1 ? `${group.name} · ` : ""}{leader.pts} {t.pts}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </Link>
+          )}
+        </div>
+      )}
+
       {/* ── Two-column layout ────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
 
@@ -274,11 +372,7 @@ export default async function HomePage() {
               <p className="text-sm text-[var(--color-dust)]">{t.sinGrupos}</p>
             ) : (
               <div className="space-y-5">
-                {groups.map((g) => {
-                  const ids = g.group_teams.map((gt) => gt.season_team_id);
-                  const groupMatches = matches.filter((m) => m.group_id === g.id);
-                  const standings = buildStandings(ids, stMap, groupMatches);
-
+                {groupStandings.map(({ group: g, standings }) => {
                   return (
                     <div key={g.id}>
                       <p
@@ -309,12 +403,7 @@ export default async function HomePage() {
                                 </td>
                                 <td className="px-3 py-2">
                                   <div className="flex items-center gap-2">
-                                    {row.color && (
-                                      <span
-                                        className="w-2 h-2 rounded-full border border-black/10 shrink-0"
-                                        style={{ background: row.color }}
-                                      />
-                                    )}
+                                    <TeamCrest shieldUrl={row.shieldUrl} color={row.color} size={18} />
                                     <span className="font-medium text-[var(--color-pitch)]">{row.name}</span>
                                   </div>
                                 </td>
